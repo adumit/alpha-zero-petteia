@@ -67,3 +67,22 @@ def test_convert_action_to_move():
             print("Throw 4")
             print(action, start, end)
             break
+
+
+def test_get_canonical_form():
+    game = PetteiaGame()
+    board = game.getInitBoard()
+    canonical_board = game.getCanonicalForm(board, 1)
+    assert np.array_equal(board, canonical_board)
+    canonical_board = game.getCanonicalForm(board, -1)
+    assert np.array_equal(board, -canonical_board)
+
+
+def test_make_move():
+    game = PetteiaGame()
+    board = game.getInitBoard()
+    outcome_board, next_player = game.getNextState(board, 1, 895)
+    game.print_board(outcome_board)
+    assert next_player == -1
+    assert outcome_board[7, 6] == 1
+    assert outcome_board[7, 7] == 0

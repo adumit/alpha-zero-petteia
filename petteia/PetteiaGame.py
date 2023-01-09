@@ -30,7 +30,7 @@ class PetteiaGame(Game):
         copy_grid = copy.deepcopy(game_grid)
         former_loc = (update_move[0][0], update_move[0][1])
         new_loc = (update_move[1][0], update_move[1][1])
-        log.info(f"Update move: {update_move}")
+        log.debug(f"Update move: {update_move}")
 
         piece_val = copy_grid[former_loc[0]][former_loc[1]]
         assert piece_val == player
@@ -175,11 +175,10 @@ class PetteiaGame(Game):
         return 8, 8
 
     def getActionSize(self) -> int:
-        return 64 * 14
+        return 64 * 14 + 1
 
     def getValidMoves(self, board, player) -> np.array:
         generated_moves = self.generate_moves(board, player)
-        log.info(f"Generated moves: {generated_moves} for player {player}")
         valid_moves_from_action_size = np.zeros(self.getActionSize())
         # The action size is 64 * 14. The first 14 are for the first square, the next 14 are for the second square, etc.
         # The first square is the bottom left, the last square is the top right.
@@ -206,19 +205,25 @@ class PetteiaGame(Game):
         return board * player
 
     def getSymmetries(self, board, pi) -> ta.List[ta.Tuple[np.array, np.array]]:
-        # mirror, rotational
+        # mirror
         assert (len(pi) == self.getActionSize())
         pi_board = np.reshape(pi[:-1], (64, 14))
         l = []
 
-        for i in range(1, 5):
-            for j in [True, False]:
-                newB = np.rot90(board, i)
-                newPi = np.rot90(pi_board, i)
-                if j:
-                    newB = np.fliplr(newB)
-                    newPi = np.fliplr(newPi)
-                l += [(newB, list(newPi.ravel()) + [pi[-1]])]
+        for j in [True, False]:
+            if j:
+                newB = np.fliplr(board)
+                newPi = np.fliplr(pi_board)
+            l += [(newB, list(newPi.ravel()) + [pi[-1]])]
         return l
 
-        
+    def stringRepresentation(self, board) -> str:
+        """
+        Input:
+            board: current board
+
+        Returns:
+            boardString: a quick conversion of board to a string format.
+                         Required by MCTS for hashing.
+        """
+        return self.print_board(should_return=True, grid=board)
