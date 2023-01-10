@@ -154,9 +154,8 @@ class PetteiaGame(Game):
         start_x = action // 112
         start_y = (action % 112) // 14
         remainder = action % 14
-            
-        end_x = remainder + (1 if remainder == start_x else 0) if remainder < 7 else start_x
-        end_y = (remainder - 7) + (1 if (remainder - 7) == start_y else 0) if remainder >= 7 else start_y
+        end_x = remainder + (1 if remainder >= start_x else 0) if remainder < 7 else start_x
+        end_y = (remainder - 7) + (1 if (remainder - 7) >= start_y else 0) if remainder >= 7 else start_y
         
         if verbose:
             print(f"remainder={remainder}")
