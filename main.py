@@ -5,7 +5,7 @@ import coloredlogs
 from Coach import Coach
 # from othello.OthelloGame import OthelloGame as Game
 from petteia.PetteiaGame import PetteiaGame as Game
-from othello.pytorch.NNet import NNetWrapper as nn
+from petteia.NNet import NNetWrapper as nn
 from utils import *
 
 log = logging.getLogger(__name__)
@@ -26,6 +26,7 @@ args = dotdict({
     'load_model': False,
     'load_folder_file': ('/dev/models/8x100x50','best.pth.tar'),
     'numItersForTrainExamplesHistory': 20,
+    'cuda': True
 
 })
 

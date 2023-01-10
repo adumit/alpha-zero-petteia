@@ -33,7 +33,12 @@ class PetteiaGame(Game):
         log.debug(f"Update move: {update_move}")
 
         piece_val = copy_grid[former_loc[0]][former_loc[1]]
-        assert piece_val == player
+        try:
+            assert piece_val == player
+        except AssertionError as e:
+            self.print_board(game_grid)
+            print(f"Player: {player}, move={update_move}")
+            raise e
         copy_grid[former_loc[0]][former_loc[1]] = 0
         copy_grid[new_loc[0]][new_loc[1]] = piece_val
         if piece_val > 0:
@@ -84,13 +89,15 @@ class PetteiaGame(Game):
                 return potential_capture
         return []
 
-    def generate_moves(self, board, player) -> ta.List[ta.Tuple[ta.Tuple[int, int], ta.Tuple[int, int]]]:
+    def generate_moves(self, board, player, debug: bool = False) -> ta.List[ta.Tuple[ta.Tuple[int, int], ta.Tuple[int, int]]]:
         possible_moves = []
-        if player == 1:
-            x_pos, y_pos = np.array(board > 0).nonzero()
-        else:
-            x_pos, y_pos = np.array(board > 0).nonzero()
+        x_pos, y_pos = np.array(board == player).nonzero()
         pos_positions = list(zip(x_pos, y_pos))
+        if debug:
+            print(f"Player:", player)
+            self.print_board(board)
+            print(f"X_pos={x_pos}, Y_pos={y_pos}")
+            print("Pos positions:", pos_positions)
 
         for piece in pos_positions:
             # For moving forward
@@ -175,10 +182,10 @@ class PetteiaGame(Game):
         return 8, 8
 
     def getActionSize(self) -> int:
-        return 64 * 14 + 1
+        return 64 * 14
 
-    def getValidMoves(self, board, player) -> np.array:
-        generated_moves = self.generate_moves(board, player)
+    def getValidMoves(self, board, player, debug=False) -> np.array:
+        generated_moves = self.generate_moves(board, player, debug=debug)
         valid_moves_from_action_size = np.zeros(self.getActionSize())
         # The action size is 64 * 14. The first 14 are for the first square, the next 14 are for the second square, etc.
         # The first square is the bottom left, the last square is the top right.
@@ -193,28 +200,31 @@ class PetteiaGame(Game):
         # The first square is the bottom left, the last square is the top right.
         start_pos, end_pos = self.convert_action_to_move(action)
         move = (start_pos, end_pos)
-        new_board = self.update_board(board, player, move)
+        try:
+            new_board = self.update_board(board, player, move)
+        except (RecursionError, AssertionError) as e:
+            self.print_board(board)
+            print(f"Player: {player}, move={move}")
+            print("Valid moves:", self.getValidMoves(board, 1, debug=True))
+            raise e
         return new_board, -player
 
-    def getGameEnded(self, board, player) -> int:
+    def getGameEnded(self, board: np.array, player: int) -> int:
+        # 1 or fewer pieces left
+        if (board > 0).sum() <= 1:
+            return -player
+        # All pieces are trapped
         if len(self.generate_moves(board, player)) == 0:
-            return 1
+            return -player
         return 0
 
     def getCanonicalForm(self, board, player) -> np.array:
         return board * player
 
     def getSymmetries(self, board, pi) -> ta.List[ta.Tuple[np.array, np.array]]:
-        # mirror
         assert (len(pi) == self.getActionSize())
-        pi_board = np.reshape(pi[:-1], (64, 14))
-        l = []
-
-        for j in [True, False]:
-            if j:
-                newB = np.fliplr(board)
-                newPi = np.fliplr(pi_board)
-            l += [(newB, list(newPi.ravel()) + [pi[-1]])]
+        pi_board = np.reshape(pi, (64, 14))
+        l = [(board, list(pi_board.ravel()))]
         return l
 
     def stringRepresentation(self, board) -> str:
