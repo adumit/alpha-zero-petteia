@@ -86,3 +86,33 @@ def test_make_move():
     assert next_player == -1
     assert outcome_board[7, 6] == 1
     assert outcome_board[7, 7] == 0
+
+
+def test_action_conversion():
+    game = PetteiaGame()
+
+    base_move = ((0, 0), (0, 1))
+    action_from_move = game.convert_move_to_action(base_move)
+    move_from_action = game.convert_action_to_move(action_from_move)
+    assert base_move == move_from_action
+
+    start_action = 0
+    move_from_action = game.convert_action_to_move(start_action, verbose=True)
+    print(move_from_action)
+    action_from_move = game.convert_move_to_action(move_from_action, verbose=True)
+    assert start_action == action_from_move
+    
+    start_action = 1
+    move_from_action = game.convert_action_to_move(start_action, verbose=True)
+    print(move_from_action)
+    action_from_move = game.convert_move_to_action(move_from_action, verbose=True)
+    assert start_action == action_from_move
+
+    for action in range(896):
+        start, end = game.convert_action_to_move(action)
+        new_action = game.convert_move_to_action((start, end))
+        try:
+            assert action == new_action
+        except AssertionError as e:
+            print(f"Start,end={start},{end} action={action} new_action={new_action}")
+            raise e
