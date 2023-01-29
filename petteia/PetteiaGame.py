@@ -210,7 +210,7 @@ class PetteiaGame(Game):
 
     def getGameEnded(self, board: np.array, player: int) -> int:
         # 1 or fewer pieces left
-        if (board > 0).sum() <= 1:
+        if (board == player).sum() <= 1:
             return -player
         # All pieces are trapped
         if len(self.generate_moves(board, player)) == 0:

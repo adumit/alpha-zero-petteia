@@ -10,7 +10,7 @@ from utils import *
 
 log = logging.getLogger(__name__)
 
-coloredlogs.install(level='FATAL')  # Change this to DEBUG to see more info.
+coloredlogs.install(level='INFO')  # Change this to DEBUG to see more info.
 
 args = dotdict({
     'numIters': 1000,

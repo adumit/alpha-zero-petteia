@@ -91,23 +91,6 @@ def test_make_move():
 def test_action_conversion():
     game = PetteiaGame()
 
-    base_move = ((0, 0), (0, 1))
-    action_from_move = game.convert_move_to_action(base_move)
-    move_from_action = game.convert_action_to_move(action_from_move)
-    assert base_move == move_from_action
-
-    start_action = 0
-    move_from_action = game.convert_action_to_move(start_action, verbose=True)
-    print(move_from_action)
-    action_from_move = game.convert_move_to_action(move_from_action, verbose=True)
-    assert start_action == action_from_move
-    
-    start_action = 1
-    move_from_action = game.convert_action_to_move(start_action, verbose=True)
-    print(move_from_action)
-    action_from_move = game.convert_move_to_action(move_from_action, verbose=True)
-    assert start_action == action_from_move
-
     for action in range(896):
         start, end = game.convert_action_to_move(action)
         new_action = game.convert_move_to_action((start, end))
@@ -116,3 +99,16 @@ def test_action_conversion():
         except AssertionError as e:
             print(f"Start,end={start},{end} action={action} new_action={new_action}")
             raise e
+
+    for x_start in range(8):
+        for y_start in range(8):
+            for x_end in range(8):
+                for y_end in range(8):
+                    if x_start == x_end and y_start == y_end:
+                        continue
+                    elif x_start != x_end and y_start != y_end:
+                        continue
+                    action = game.convert_move_to_action(((x_start, y_start), (x_end, y_end)))
+                    start, end = game.convert_action_to_move(action)
+                    assert (x_start, y_start) == start
+                    assert (x_end, y_end) == end

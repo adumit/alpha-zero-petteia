@@ -29,6 +29,10 @@ class Coach():
         self.trainExamplesHistory = []  # history of examples from args.numItersForTrainExamplesHistory latest iterations
         self.skipFirstSelfPlay = False  # can be overriden in loadTrainExamples()
 
+    def _save_episode(self, episode):
+        with open('episode.pickle', 'wb') as f:
+            Pickler(f).dump(episode)
+
     def executeEpisode(self):
         """
         This function executes one episode of self-play, starting with player 1.
@@ -50,9 +54,12 @@ class Coach():
         self.curPlayer = 1
         episodeStep = 0
 
+        current_episode = []
+
         while True:
             episodeStep += 1
             canonicalBoard = self.game.getCanonicalForm(board, self.curPlayer)
+            player = self.curPlayer
             temp = int(episodeStep < self.args.tempThreshold)
 
             pi = self.mcts.getActionProb(canonicalBoard, temp=temp)
@@ -61,7 +68,13 @@ class Coach():
                 trainExamples.append([b, self.curPlayer, p, None])
 
             action = np.random.choice(len(pi), p=pi)
-            board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
+            try:
+                board, self.curPlayer = self.game.getNextState(board, self.curPlayer, action)
+            except Exception as e:
+                current_episode.append((canonicalBoard, player, pi, action, None))
+                self._save_episode(current_episode)
+                raise e
+            current_episode.append((canonicalBoard, player, pi, action, board))
 
             r = self.game.getGameEnded(board, self.curPlayer)
 
